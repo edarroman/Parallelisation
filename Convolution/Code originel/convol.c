@@ -320,7 +320,13 @@ int main(int argc, char *argv[]) {
   w = r.file.ras_width;
     
   /* debut du chronometrage */
-  debut = my_gettimeofday();            
+  debut = my_gettimeofday();        
+  
+  /**** Initialisation MPI ****/
+  MPI_Status status;
+  MPI_Init(&argc, &argv);	// init MPI 
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);	// récupération des rangs
+  MPI_Comm_size(MPI_COMM_WORLD, &p); // récupération du nombre de processus    
 
   /* La convolution a proprement parler */
   for(i=0 ; i < nbiter ; i++){
