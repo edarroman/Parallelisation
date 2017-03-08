@@ -181,3 +181,36 @@ Temps total de calcul : 75.8035 sec
 avec mpiexec --np ./mandel_mpi
 
 avec 16
+Envoi Calcul 13
+Envoi Calcul 3
+Temps de calcul de 3 : 0.475663 sec
+Envoi Calcul 12
+Temps de calcul de 13 : 0.435757 sec
+Envoi Calcul 1
+Envoi Calcul 14
+Temps de calcul de 1 : 0.486634 sec
+Temps de calcul de 12 : 0.422641 sec
+Envoi Calcul 15
+Envoi Calcul 2
+Temps de calcul de 2 : 0.498984 sec
+Temps de calcul de 14 : 0.45478 sec
+Temps de calcul de 15 : 0.459888 sec
+Envoi Calcul 4
+Temps de calcul de 4 : 1.2457 sec
+Envoi Calcul 11
+Temps de calcul de 11 : 1.22932 sec
+Envoi Calcul 10
+Envoi Calcul 5
+Temps de calcul de 5 : 5.96841 sec
+Temps de calcul de 10 : 5.94421 sec
+Envoi Calcul 9
+Temps de calcul de 9 : 12.7909 sec
+Envoi Calcul 6
+Temps de calcul de 6 : 12.8722 sec
+Envoi Calcul 8
+Temps de calcul de 8 : 19.5476 sec
+Envoi Calcul 7
+Temps de calcul de 7 : 19.6453 sec
+Temps total de calcul : 76.1072 sec
+
+avec 8
