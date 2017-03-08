@@ -15,7 +15,10 @@
 
 #include "rasterfile.h"
 
-
+#define MASTER 0
+#define TAG_FIN 2
+#define TAG_CALCUL 0
+#define TAG_BLOC 0
 
 /*char info[] = "\
 Usage:\n\
@@ -263,8 +266,17 @@ int main(int argc, char *argv[]) {
   int p;
   /* Rang */
   int rank;
-  /* Master */
-  int MASTER = 0;
+  /* Blocs */
+  int num_blocs_en = 0; // numero de blocs
+  int nb_lignes = 20;
+  if( argc > 8) nb_lignes = atoi(argv[8]);
+  int nb_blocs = h/nb_lignes;
+  int nb_bloc_recus = 0;
+  int num_blocs = 0;
+  /* Condition de fin */
+  int false = 0;
+  int true =1;
+  int fin_travail = false;
   /* Variables locales */
   int h_local;
   double ymin_local;
@@ -298,72 +310,91 @@ int main(int argc, char *argv[]) {
 		return 0;
 	  }
 	  
-	  /* Traitement de la grille point par point */
-	  ymin_local = ymin + h_local * rank * yinc;
-	  y = ymin_local;
-	  for (i = 0; i < h; i++) {	
-		x = xmin;
-		//printf("I: %d \n", i);
-		for (j = 0; j < w; j++) {
-			//fprintf( stderr, "J: %d \n",j);
-		  // printf("%d\n", xy2color( x, y, prof));
-		  // printf("(x,y)=(%g;%g)\t (i,j)=(%d,%d)\n", x, y, i, j);
-		  *pima++ = xy2color( x, y, prof); 
-		  x += xinc;
+	 /* Premier envoie aux esclaves */ 
+	 if (p < nb_blocs){
+	  for (i = 1; i < p; i++) {
+			MPI_Send(&num_blocs_en, 1, MPI_INT, i, TAG_BLOC, MPI_COMM_WORLD); 
+			num_blocs_en++;
 		}
-		y += yinc; 
-	  }
+	}else{
+		for (i = 1; i < nb_blocs; i++) {
+			MPI_Send(&num_blocs_en, 1, MPI_INT, i, TAG_BLOC, MPI_COMM_WORLD);
+			num_blocs_en++;
+		}
+	}
 	  
-	  /* Reception données workers */
-	  int k;
-	  for (k=1; k<p; k++){
-		  MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+	  /* Reception et envoie des autres blocs */
+	  while (fin_travail == false){
+		  MPI_Probe(MPI_ANY_SOURCE, TAG_BLOC, MPI_COMM_WORLD, &status);
 		  int s = status.MPI_SOURCE;
-		  if (s != MASTER){
-			  MPI_Recv(ima + s * h_local * w * sizeof(unsigned char), h_local * w, MPI_CHAR, s, 0, MPI_COMM_WORLD, &status);
-		  } 
-	  }
-	   
-	  /* fin du chronometrage */
-	  fin = my_gettimeofday();
-	  fprintf( stderr, "Temps total de calcul : %g sec\n", 
-		   fin - debut);
+		  if(s != MASTER) {
+			  MPI_Recv(&num_blocs, 1 , MPI_INT, MPI_ANY_SOURCE, TAG_BLOC, MPI_COMM_WORLD, &status);
+			  MPI_Recv( ima + num_blocs * nb_lignes * w * sizeof(unsigned char), nb_lignes * w, MPI_CHAR, s, TAG_CALCUL, MPI_COMM_WORLD, &status); 
+			  nb_bloc_recus++;
+			  if (num_blocs_en < nb_blocs){
+				 MPI_Send(&num_blocs_en, 1, MPI_INT, s, TAG_BLOC, MPI_COMM_WORLD);
+				 MPI_Send(&false,1,MPI_INT, s, TAG_FIN, MPI_COMM_WORLD); // false // 2 pour tag de la fin
+				 num_blocs_en++;
+			  }else{
+				  MPI_Send(&true,1,MPI_INT, s, TAG_FIN, MPI_COMM_WORLD); // true
+			  }
+			  // Condition de fin
+			  if (nb_bloc_recus == nb_blocs){
+				  fin_travail = true;
+				  
+				  /* fin du chronometrage */
+				  fin = my_gettimeofday();
+				  fprintf( stderr, "Temps total de calcul : %g sec\n", 
+					   fin - debut);
 
-	  /* Sauvegarde de la grille dans le fichier resultat "mandel.ras" */
-	  sauver_rasterfile( "mandel.ras", w, h, ima);
+				  /* Sauvegarde de la grille dans le fichier resultat "mandel.ras" */
+				  sauver_rasterfile( "mandel.ras", w, h, ima);
+			  }
+		  }
+	  }
 	  
   }else{
 	  
-	  /* Allocation memoire du tableau resultat */  
-	  pima_local = ima_local = (unsigned char *)malloc(w * h_local * sizeof(unsigned char));
+	  while (fin_travail == false){
 	  
-	  if( ima_local == NULL) {
-		fprintf( stderr, "Erreur allocation mémoire du tableau \n");
-		return 0;
+		  /* Allocation memoire du tableau resultat */  
+		  pima_local = ima_local = (unsigned char *)malloc(w * nb_lignes * sizeof(unsigned char));
+		  
+		  if( ima_local == NULL) {
+			fprintf( stderr, "Erreur allocation mémoire du tableau \n");
+			return 0;
+		  }
+		  
+		  /* Reception message maitre */ 
+		  MPI_Recv(&num_blocs,1,MPI_INT, MASTER, TAG_BLOC, MPI_COMM_WORLD, &status);
+		  
+		  
+		  /* Traitement de la grille point par point */
+		  ymin_local = ymin + nb_lignes * num_blocs * yinc;
+		  y = ymin_local;
+		  for (i = 0; i < nb_lignes; i++) {	
+			x = xmin;
+			for (j = 0; j < w; j++) {
+			  // printf("%d\n", xy2color( x, y, prof));
+			  // printf("(x,y)=(%g;%g)\t (i,j)=(%d,%d)\n", x, y, i, j);
+			  *pima_local++ = xy2color( x, y, prof); 
+			  x += xinc;
+			}
+			y += yinc; 
+		  }
+		  
+		  /* Envoi au master */
+		  MPI_Send(&num_blocs, 1, MPI_INT, MASTER, TAG_BLOC, MPI_COMM_WORLD);
+		  MPI_Send(ima_local, nb_lignes * w, MPI_CHAR, MASTER, TAG_CALCUL, MPI_COMM_WORLD);
+		  
+		  /* fin du chronometrage */
+		  fin = my_gettimeofday();
+		  fprintf( stderr, "Temps de calcul de %d : %g sec\n", num_blocs, fin - debut);
+		  
+		  /* Condition de fin */
+		  MPI_Recv(&fin_travail,1,MPI_INT, MASTER, TAG_FIN, MPI_COMM_WORLD, &status);
+		  
 	  }
-	  
-	  /* Traitement de la grille point par point */
-	  ymin_local = ymin + h_local * rank * yinc;
-	  y = ymin_local;
-	  for (i = 0; i < h_local; i++) {	
-		x = xmin;
-		for (j = 0; j < w; j++) {
-		  // printf("%d\n", xy2color( x, y, prof));
-		  // printf("(x,y)=(%g;%g)\t (i,j)=(%d,%d)\n", x, y, i, j);
-		  *pima_local++ = xy2color( x, y, prof); 
-		  x += xinc;
-		}
-		y += yinc; 
-	  }
-	  fprintf( stderr, "Envoi Calcul %d \n", rank);
-	  
-	  /* Envoi au master */
-	  MPI_Send(ima_local, h_local * w, MPI_CHAR, MASTER, 0, MPI_COMM_WORLD);
-	  
-	  /* fin du chronometrage */
-	  fin = my_gettimeofday();
-	  fprintf( stderr, "Temps de calcul de %d : %g sec\n", rank,
-		   fin - debut);
 	  
 	  
   }

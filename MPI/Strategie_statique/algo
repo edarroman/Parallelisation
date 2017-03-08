@@ -1,0 +1,32 @@
+algo(Maitre) Partie1
+
+if (rank==master){
+  - Allocation dynamique de l'image globale:
+    w*h*sizeof(char)
+  - Test de l'allocation dynamique
+  - calcul de la position du début de l'image locale du maitre
+
+}
+
+
+algo: Envoi/réception des blocs
+
+Données: W,rank, h_local, ima, pima
+
+debut
+  si rank == MAITRE alors
+    pour tous les ouvriers faire
+      //attente d'un message
+      MPI_Probe()
+      s= ;
+      si s!= Maitre alors
+        //assemblage du bloc
+        MPI_REcv()
+      fin si
+    fin pour tous
+    sauvegarde de l'image
+    affichage chronomètre
+  sinon
+    MPI_Send()
+  fin si
+fin

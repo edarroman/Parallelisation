@@ -1,0 +1,18 @@
+/* lancement fichier */
+./convol nomImage.ras numero_filtre(de 0à4) nb-itération
+
+Tests:
+
+/* Changement filtre */
+./convol Sukhothai_4080x6132.ras 3 100
+Temps total de calcul : 67.4775 seconde(s)
+./convol Sukhothai_4080x6132.ras 0 100
+Temps total de calcul : 80.9126 seconde(s)
+./convol Sukhothai_4080x6132.ras 1 100
+Temps total de calcul : 83.9659 seconde(s)
+./convol Sukhothai_4080x6132.ras 2 100
+Temps total de calcul : 70.8985 seconde(s)
+./convol Sukhothai_4080x6132.ras 4 100
+
+
+/* Changement itérations */
