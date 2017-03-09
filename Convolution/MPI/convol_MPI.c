@@ -338,7 +338,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);	// récupération des rangs
   MPI_Comm_size(MPI_COMM_WORLD, &p); // récupération du nombre de processus    
  
-  if (rank == MASTER) {
+	if (rank == MASTER) {
 		/* Lecture du fichier Raster */
 		lire_rasterfile(argv[1], &r);
 		h = r.file.ras_height;
@@ -351,18 +351,14 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	//envoi des paramètres
-    MPI_Bcast(&h,2, MPI_INT, MASTER, MPI_COMM_WORLD);
-    MPI_Bcast(&w,2, MPI_INT, MASTER, MPI_COMM_WORLD);
+    MPI_Bcast(&h,1, MPI_INT, MASTER, MPI_COMM_WORLD);
+    MPI_Bcast(&w,1, MPI_INT, MASTER, MPI_COMM_WORLD);
     
     //calcul de h_loc
     int h_loc = h / p + (rank > 0 ? 1:0) + (rank < p-1 ? 1:0); 
     
     // Allocation mémoire
-    if (rank == MASTER) {
-		ima_loc = r.data;
-	}else{
-		ima_loc = (unsigned char*)malloc(w * h_loc * sizeof(unsigned char));
-	}
+	ima_loc = (unsigned char*)malloc(w * h_loc * sizeof(unsigned char));
 	if (ima_loc == NULL) {
 		fprintf(stderr, "(%d) Failed to allocate memory for ima_loc.\n", rank);
 		MPI_Finalize();
@@ -370,7 +366,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	// Envoie blocs
-	MPI_Scatter(ima_loc, w*h/p, MPI_CHAR, ima_loc + (rank > 0 ? w:0), w*h/p, MPI_CHAR, MASTER, MPI_COMM_WORLD);
+	MPI_Scatter(r.data, w*h/p, MPI_CHAR, ima_loc + (rank > 0 ? w:0), w*h/p, MPI_CHAR, MASTER, MPI_COMM_WORLD);
 	MPI_Status status_avant;
 	MPI_Status status_apres;
 	
@@ -393,7 +389,7 @@ int main(int argc, char *argv[]) {
   } /* for i */
 
 	// Renvoie des données au master :
-	MPI_Gather(ima_loc + (rank > 0 ? w : 0), w * h / p, MPI_CHAR, ima_loc, w * h / p,MPI_CHAR, MASTER, MPI_COMM_WORLD);
+	MPI_Gather(ima_loc + (rank > 0 ? w : 0), w * h / p, MPI_CHAR, r.data, w * h / p,MPI_CHAR, MASTER, MPI_COMM_WORLD);
 	
 
   /* fin du chronometrage */
