@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
   /* Traitement de la grille point par point */
   #pragma omp parallel
 	{
-		#pragma omp for private (j,x,y,pima) schedule(dynamic)
+		#pragma omp for private (j,x,y,pima) schedule(static)
 		  for (i = 0; i < h; i++) {	
 			y = ymin + i * yinc; 
 			pima = &ima[i*w];
