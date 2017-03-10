@@ -90,7 +90,21 @@ Temps processus : 53.8778 seconde(s)
 Temps processus : 53.8869 seconde(s)
 Temps total : 54.0516 seconde(s)
 4 4 100
-=> trop long
+Temps processus : 1632.46 seconde(s)
+Temps processus : 1634.35 seconde(s)
+Temps processus : 1634.45 seconde(s)
+Temps processus : 1634.44 seconde(s)
+Temps total : 1634.85 seconde(s)
+8 4 100
+Temps processus : 1460.07 seconde(s)
+Temps processus : 1482.47 seconde(s)
+Temps processus : 1483.92 seconde(s)
+Temps processus : 1484.42 seconde(s)
+Temps processus : 1487.1 seconde(s)
+Temps processus : 1488.05 seconde(s)
+Temps processus : 1488.97 seconde(s)
+Temps processus : 1489.01 seconde(s)
+Temps total : 1490.22 seconde(s)
 2 2 100
 Temps processus : 101.362 seconde(s)
 Temps processus : 101.363 seconde(s)

@@ -1,0 +1,19 @@
+
+
+pour i allant de 0 à nbiter faire
+  si rank>0 faire
+    Envoyer la ligne 1 et 2 au processus précédent(rank k-1)
+  fin si
+  si rank<p-1 faire
+    Envoyer la ligne h_loc-2 et h_loc-3 au processus suivant (rank+1)
+  fin si
+
+faire la convolution du bloc (qui va de la ligne 1 à h_loc-1)
+  si rank>0 faire
+    recevoir la ligne 0 et 1 du processus rank-1
+  fin si
+  si nombre<p-1 faire
+    recevoir la ligne h_loc-1 et h_loc-2 du processus (rank+1)
+  fin si
+  faire la convolution de la ligne 1
+  faire la convolution de la ligne h_loc-1
