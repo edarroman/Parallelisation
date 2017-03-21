@@ -51,7 +51,7 @@ On fait une division de l'image selon la hauteur car la mémoire est un tableau 
 Pour paralléliser le code nous allons utiliser une stratégie statique (découpage en blocs selon le nombre de processus: une seule fois) et une stratégie dynamique (découpage par blocs pui envoie aux ouvriers et dès qu'ils ont finis, on en renvoie: plusieurs fois)
 
 #### 3/
-** Architecture des processeurs à mémoire distribuée : Stratégie statique **  
+##### Architecture des processeurs à mémoire distribuée : Stratégie statique
 Données :   
 H : Hauteur tableau  
 W : largeur tableau  
@@ -91,7 +91,7 @@ Données: W,rank, h_local, ima, pima
       fin si
     fin
 
-** Architecture des processeurs à répartition dynamique des charges : Stratégie dynamique **
+##### Architecture des processeurs à répartition dynamique des charges : Stratégie dynamique
 
 - le processus Maitre va rien calculer
 - le processus Maitre devrait recevoir les lignes traitées par les ouvriers et si besoin
@@ -117,3 +117,41 @@ algo Maitre
           sinon on envoie un message en indiquant la fin du travail
 
 ### Question 4:
+Les résultats correspondent à ceux relevés sur les Raspberry sachant que nous étions à plusieurs dessus.  
+
+##### Stratégie statique
+Temps d'exécution en fonction du nombre de processus
+![Courbe](/Fractales/Strategie_statique/courbe_statique.png)  
+
+| Processus |	Temps |
+| ------------- |: -------------: |
+| 1	| 18,9913 |
+| 2 |	18,8637 |
+| 4 |	18,8869 |
+| 8	| 38,168  |
+| 16  |	76,1072 |
+| 32  |	153,008 |
+
+##### Stratégie dynamique
+Temps d'exécution total en fonction du nombre de processus pour un nombre de ligne de 10
+
+| Processus |	Temps |
+| ------------- |: -------------: |
+| 2 |	18.8904 |
+| 4 |	6.3425 |
+| 8	| 5.97578   |
+| 16  |	 6.11923 |
+
+On voit bien que cela n'est pas nécessaire d'aller au delà de 8 processus pour un nombre de 10 lignes.  
+
+Temps d'exécution total en fonction du nombre de ligne pour un nombre de processus de 4
+
+| Lignes |	Temps |
+| ------------- |: -------------: |
+| 5 |	6.42303 |
+| 10 |	6.3425 |
+| 20	| 6.38665   |
+| 50  |	 6.42637 |
+| 100	| 7.91352  |
+
+Ainsi comme le nombre de processus n'a pas besoin d'être supérieur à 8, le nombre de lignes atteint sont optimatisation autour de 10-20 lignes.
