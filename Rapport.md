@@ -46,3 +46,74 @@ Le calcul aux différentes profondeurs (fonction xy2color) n'est pas parallélis
 Autrement dit, le calcul de pima sur chaque pixel est indépendant (partie parallélisable) mais la fonction xy2color en elle-même n'est pas parallélisable, on fait donc une division de l'image.
 
 #### 2/
+
+On fait une division de l'image selon la hauteur car la mémoire est un tableau linéaire, c'est ainsi plus facile.
+Pour paralléliser le code nous allons utiliser une stratégie statique (découpage en blocs selon le nombre de processus: une seule fois) et une stratégie dynamique (découpage par blocs pui envoie aux ouvriers et dès qu'ils ont finis, on en renvoie: plusieurs fois)
+
+#### 3/
+** Architecture des processeurs à mémoire distribuée : Stratégie statique **  
+Données :   
+H : Hauteur tableau  
+W : largeur tableau  
+rank : rang du processus  
+h_local : hauteur d'un bloc
+
+    Ymin_loc = Ymin * rank * Yinc  
+
+    if (rank==master){
+      - Allocation dynamique de l'image globale:
+        w*h*sizeof(char)
+      - Test de l'allocation dynamique
+      - calcul de la position du début de l'image locale du maitre
+
+    }
+
+
+Envoi/réception des blocs  
+
+Données: W,rank, h_local, ima, pima
+
+    debut
+      si rank == MAITRE alors
+        pour tous les ouvriers faire
+          //attente d'un message
+          MPI_Probe()
+          s= ;
+          si s!= Maitre alors
+            //assemblage du bloc
+            MPI_REcv()
+          fin si
+        fin pour tous
+        sauvegarde de l'image
+        affichage chronomètre
+      sinon
+        MPI_Send()
+      fin si
+    fin
+
+** Architecture des processeurs à répartition dynamique des charges : Stratégie dynamique **
+
+- le processus Maitre va rien calculer
+- le processus Maitre devrait recevoir les lignes traitées par les ouvriers et si besoin
+de leur envoyer à nouveau d'autres lignes à traiter
+- le nombre de blocs est un argument du programme => caractérisé par le nombre de lignes
+à traiter
+- à chaque fois qu'un ouvrier finit une portion de calcul à traiter, il l'envoie au maitre qui
+devrait le mettre au bon endroit
+
+algo Maitre  
+    - allocation dynamique de l'image globale
+    - test de l'allocation dynamique
+    - pour i va de 0 à nb_proc faire
+        si i!=Maitre
+          on envoie à l'esclave de rang i num_bloc
+          on incrémente num_bloc
+    - pour i va de 0 à h/nb_lignes faire
+        on recoit le num du bloc fait par l'ouvrier
+        on détermine le rang de l'émetteur
+        on recoit le calcul
+        test de fin de calcul
+          s'il reste des calculs à faire on envoie un num de bloc à calculer à l'ouvrier
+          sinon on envoie un message en indiquant la fin du travail
+
+### Question 4:
